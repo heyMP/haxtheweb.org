@@ -1,0 +1,29 @@
+image: tiangolo/docker-with-compose
+
+stages:
+  - build
+  - deploy
+
+build-haxtheweb-swarm:
+  stage: build
+  tags:
+    - haxtheweb
+  script:
+    # Cache busters
+    - sed -i -E "s/file=\"site\.json\"/file=\"site\.json\?v${CI_COMMIT_SHORT_SHA}\"/" index.html
+    - docker-compose build
+  only:
+    - master
+
+deploy-haxtheweb-swarm:
+  stage: deploy
+  tags:
+    - haxtheweb
+  variables:
+    HOST: "haxtheweb.org"
+  script:
+    - pwd
+    - ls -la
+    - docker stack deploy -c docker-compose.yml --resolve-image always haxtheweb
+  only:
+    - master
